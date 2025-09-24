@@ -56,7 +56,7 @@ export function ChatInterface() {
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -308,7 +308,7 @@ export function ChatInterface() {
                         }
 
                         return (
-                          <div key={index} className="flex mb-2 last:mb-0">
+                          <div key={index} className="flex">
                             <span className={getDotClass()}>●</span>
                             <div className="flex-1">{content}</div>
                           </div>
@@ -354,7 +354,7 @@ export function ChatInterface() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything about teaching..."
-              className="w-full pl-8 focus:ring-0 focus:ring-offset-0 focus:border-input focus:outline-none border-input focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="w-full pl-8 focus:ring-0 focus:ring-offset-0 focus:border-input focus:outline-none border-input focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
               disabled={status !== 'ready'}
             />
           </div>
