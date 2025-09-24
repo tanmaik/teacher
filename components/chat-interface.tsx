@@ -56,7 +56,7 @@ export function ChatInterface() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -81,7 +81,7 @@ export function ChatInterface() {
                       </span>
                     </div>
                   ) : (
-                    <div className="text-sm space-y-2">
+                    <div className="text-sm space-y-4">
                       {message.parts?.map((part, index) => {
                         // First determine what content to render
                         const content = (() => {
