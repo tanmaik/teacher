@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+manim
+networkx
+numpy
+scipy
+sympy
+imageio-ffmpeg
+python-multipart
+pydantic
+tenacity
