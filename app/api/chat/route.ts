@@ -1,8 +1,9 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { streamText, convertToModelMessages, UIMessage, tool, stepCountIs, validateUIMessages, InferUITools, UIDataTypes } from 'ai'
 import { z } from 'zod'
+import { executeManimCode, createManimTemplate, validateManimCode } from '@/lib/manim-sandbox'
 
-export const maxDuration = 30
+export const maxDuration = 600 // 10 minutes to allow for video rendering
 
 // Educational tools for teachers
 const calculateTool = tool({
@@ -154,11 +155,63 @@ const gradingHelperTool = tool({
   },
 })
 
+const manimVideoTool = tool({
+  description: 'Generate educational videos using Manim (Mathematical Animation Engine) from Python code',
+  inputSchema: z.object({
+    pythonCode: z.string().describe('Python code using Manim to create mathematical animations'),
+    quality: z.enum(['low', 'medium', 'high']).default('medium').describe('Video quality - affects render time'),
+    additionalPackages: z.array(z.string()).default([]).describe('Additional Python packages to install'),
+  }),
+  async execute({ pythonCode, quality, additionalPackages }) {
+    // Validate the code first
+    const validation = validateManimCode(pythonCode)
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: 'Code validation failed',
+        issues: validation.issues,
+        template: createManimTemplate(),
+      }
+    }
+
+    try {
+      const result = await executeManimCode(pythonCode, {
+        quality,
+        additionalPackages,
+        timeout: 10 * 60 * 1000, // 10 minutes for video rendering
+      })
+
+      if (result.success && result.videoUrl) {
+        return {
+          success: true,
+          videoUrl: result.videoUrl,
+          output: result.output,
+          message: 'Video generated successfully! The video will be accessible for the duration of the sandbox session.',
+        }
+      } else {
+        return {
+          success: false,
+          error: result.error || 'Unknown error occurred',
+          output: result.output,
+          template: createManimTemplate(),
+        }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        template: createManimTemplate(),
+      }
+    }
+  },
+})
+
 const tools = {
   calculate: calculateTool,
   generateLessonPlan: lessonPlannerTool,
   generateQuiz: quizGeneratorTool,
   calculateGrades: gradingHelperTool,
+  generateManimVideo: manimVideoTool,
 } as const
 
 export type TeacherChatMessage = UIMessage<
@@ -194,10 +247,19 @@ export async function POST(req: Request) {
     - generateLessonPlan: For creating structured lesson plans
     - generateQuiz: For generating quiz questions
     - calculateGrades: For grade calculations and statistics
+    - generateManimVideo: For creating educational mathematics videos using Python and Manim
 
     Always provide practical, evidence-based advice that considers different learning styles and educational contexts. Be encouraging and supportive while maintaining professionalism.
 
-    When appropriate, use the available tools to provide more comprehensive assistance.`,
+    When appropriate, use the available tools to provide more comprehensive assistance.
+
+    For the Manim video tool:
+    - Keep animations SHORT (10-30 seconds max) for better attention and loading
+    - Break complex concepts into SMALL, focused clips rather than long videos
+    - Each scene should demonstrate ONE key concept or step
+    - Use simple, clear animations that students can easily follow
+    - Ensure Python code follows proper Manim structure with Scene classes and construct methods
+    - Consider creating multiple short clips for multi-step explanations rather than one long video`,
     tools,
     stopWhen: stepCountIs(10), // Allow up to 10 steps for complex multi-tool workflows
     abortSignal: req.signal,
