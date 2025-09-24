@@ -81,7 +81,7 @@ export function ChatInterface() {
                       </span>
                     </div>
                   ) : (
-                    <div className="text-sm">
+                    <div className="text-sm space-y-2">
                       {message.parts?.map((part, index) => {
                         // First determine what content to render
                         const content = (() => {
