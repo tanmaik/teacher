@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Teacher App",
-  description: "A modern teacher application",
+  title: "AI Teacher Assistant",
+  description: "An AI-powered assistant for educators",
 };
 
 export default function RootLayout({
@@ -13,7 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased h-screen">
+        {children}
+      </body>
     </html>
   );
 }

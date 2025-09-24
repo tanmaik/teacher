@@ -1,1 +1,2 @@
 - use pnpm instead of npm
+- the latest claude model is claude-sonnet-4-20250514
