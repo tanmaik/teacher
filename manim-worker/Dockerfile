@@ -32,9 +32,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
-COPY scripts ./scripts
-
-RUN chmod +x scripts/start.sh
 
 EXPOSE 8000
 
@@ -44,6 +41,6 @@ RUN mkdir -p "$MANIM_OUTPUT_DIR"
 
 VOLUME ["/data/outputs"]
 
-CMD ["/app/scripts/start.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
