@@ -51,13 +51,24 @@ const manimVideoTool = tool({
     }
 
     try {
+      console.log('Executing Manim code with quality:', quality)
+      console.log('Python code length:', pythonCode.length, 'characters')
+
       const result = await executeManimCode(pythonCode, {
         quality,
         additionalPackages,
         timeout: 10 * 60 * 1000, // 10 minutes for video rendering
       })
 
+      console.log('Manim execution result:', {
+        success: result.success,
+        hasVideoUrl: !!result.videoUrl,
+        error: result.error,
+        outputLength: result.output?.length
+      })
+
       if (result.success && result.videoUrl) {
+        console.log('Video generated successfully:', result.videoUrl)
         return {
           success: true,
           videoUrl: result.videoUrl,
@@ -65,6 +76,10 @@ const manimVideoTool = tool({
           message: 'Video generated successfully! The video will be accessible for the duration of the sandbox session.',
         }
       } else {
+        console.error('Manim execution failed:', {
+          error: result.error,
+          output: result.output
+        })
         return {
           success: false,
           error: result.error || 'Unknown error occurred',
@@ -73,6 +88,7 @@ const manimVideoTool = tool({
         }
       }
     } catch (error) {
+      console.error('Exception in Manim tool:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),

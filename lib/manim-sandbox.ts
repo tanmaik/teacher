@@ -56,6 +56,8 @@ export async function executeManimCode(
 
   const pollInterval = Number(process.env.MANIM_WORKER_POLL_INTERVAL_MS ?? DEFAULT_POLL_INTERVAL_MS)
 
+  console.log(`Creating Manim job at ${workerUrl}/jobs`)
+
   const createResponse = await fetch(new URL('/jobs', workerUrl), {
     method: 'POST',
     headers: {
@@ -71,6 +73,7 @@ export async function executeManimCode(
 
   if (!createResponse.ok) {
     const body = await createResponse.text()
+    console.error(`Failed to create Manim job: Status ${createResponse.status}, Body: ${body}`)
     return {
       success: false,
       output: body,
@@ -79,10 +82,12 @@ export async function executeManimCode(
   }
 
   const job: WorkerJob = await createResponse.json()
+  console.log(`Created Manim job ${job.id} with status: ${job.status}`)
   const startTime = Date.now()
 
   while (true) {
     if (Date.now() - startTime > timeout) {
+      console.error(`Manim job ${job.id} timed out after ${timeout}ms`)
       return {
         success: false,
         output: 'Timed out while waiting for Manim worker',
@@ -97,6 +102,7 @@ export async function executeManimCode(
 
     if (!statusResponse.ok) {
       const body = await statusResponse.text()
+      console.error(`Failed to fetch job status for ${job.id}: Status ${statusResponse.status}, Body: ${body}`)
       return {
         success: false,
         output: body,
@@ -105,9 +111,11 @@ export async function executeManimCode(
     }
 
     const current: WorkerJob = await statusResponse.json()
+    console.log(`Job ${job.id} status: ${current.status}`)
 
     if (current.status === 'completed' && current.output_path) {
       const output = [current.stdout_log, current.stderr_log].filter(Boolean).join('\n')
+      console.log(`Manim job ${job.id} completed successfully, video URL: ${buildVideoUrl(current.id)}`)
       return {
         success: true,
         videoUrl: buildVideoUrl(current.id),
@@ -117,6 +125,11 @@ export async function executeManimCode(
 
     if (current.status === 'failed') {
       const output = [current.stdout_log, current.stderr_log].filter(Boolean).join('\n')
+      console.error(`Manim job ${job.id} failed:`, {
+        error: current.error_message,
+        stdout: current.stdout_log,
+        stderr: current.stderr_log
+      })
       return {
         success: false,
         output,
