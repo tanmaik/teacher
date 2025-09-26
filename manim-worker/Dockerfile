@@ -39,8 +39,6 @@ ENV MANIM_OUTPUT_DIR=/data/outputs
 
 RUN mkdir -p "$MANIM_OUTPUT_DIR"
 
-VOLUME ["/data/outputs"]
-
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
