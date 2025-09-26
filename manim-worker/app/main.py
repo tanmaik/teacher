@@ -235,6 +235,13 @@ async def download_video(job_id: str):
     return FileResponse(video_path, media_type="video/mp4", filename=video_path.name)
 
 
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    logger.info("Root endpoint accessed")
+    return {"service": "Manim Worker", "version": "0.1.0", "status": "running"}
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
