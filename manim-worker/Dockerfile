@@ -23,6 +23,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblzma-dev \
     zlib1g-dev \
     pkg-config \
+    texlive \
+    texlive-latex-extra \
+    texlive-fonts-extra \
+    texlive-science \
+    dvipng \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
